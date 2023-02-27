@@ -1,0 +1,58 @@
+version: '3.9'
+
+volumes:
+  pgdata:
+  static_volume:
+
+services:
+  postgredb:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - .:/docker-entrypoint-initdb.d
+      - ./logs:/var/log
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: "netology_stocks_products"
+      POSTGRES_USER: "admin1"
+      POSTGRES_PASSWORD: "admin1pwd"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin1 -d netology_stocks_products"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 400M
+
+  web:
+    build: .
+    volumes:
+      - .:/code
+      - static_volume:/stocks_products/staticfiles
+    depends_on:
+      - postgredb
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 1200M
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/stocks_products/staticfiles
+    depends_on:
+      - web
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 400M

@@ -1,0 +1,128 @@
+# примеры API-запросов
+
+###
+# создание продукта
+
+POST http://localhost:8000/api/v1/products/
+Content-Type: application/json
+
+{
+  "title": "Икра кабачковая",
+  "description": "Заморская"
+}
+
+###
+
+# получение списка продуктов
+GET http://localhost:8000/api/v1/products/
+Content-Type: application/json
+
+###
+
+# обновление продукта
+PATCH http://localhost:8000/api/v1/products/1/
+Content-Type: application/json
+
+{
+  "description": "Луховицкие огурцы"
+}
+
+###
+
+# удаление продукта (и соответствующих записей каскадом из промежуточной таблицы)
+DELETE http://localhost:8000/api/v1/products/1/
+Content-Type: application/json
+
+###
+
+# поиск продуктов по названию и описанию
+GET http://localhost:8000/api/v1/products/?search=икра
+Content-Type: application/json
+
+###
+
+# создание склада
+# + создание новых позиций по продуктам на этом складе - в промежуточной таблице
+# если список продуктов пустой, то создаётся только новый склад
+POST http://localhost:8000/api/v1/stocks/
+Content-Type: application/json
+
+{
+  "address": "Москва3",
+  "positions": [
+    {
+      "product": 10,
+      "quantity": 300,
+      "price": 100
+    },
+    {
+      "product": 11,
+      "quantity": 1000,
+      "price": 50
+    },
+    {
+      "product": 12,
+      "quantity": 1000,
+      "price": 5000
+    }
+  ]
+}
+
+###
+# Изменение позиций по продуктам на указанном в url складе
+# Если таких продуктов нет на складе, то эти продукты вносятся на этот склад (создаются записи в промежуточной таблице)
+PATCH http://localhost:8000/api/v1/stocks/50/
+Content-Type: application/json
+
+{
+  "positions": [
+    {
+      "product": 10,
+      "quantity": 212121,
+      "price": 2121
+    },
+    {
+      "product": 11,
+      "quantity": 11111111,
+      "price": 1111
+    }
+  ]
+}
+
+###
+
+# удаление склада (и каскадом соответсвенно всех его записей из промежуточной таблицы)
+DELETE http://localhost:8000/api/v1/stocks/51/
+Content-Type: application/json
+
+###
+
+# поиск складов по адресу (filter - только полное совпадение(слово целиком)). Результат - возможна только одна запись.
+GET http://localhost:8000/api/v1/stocks/?address=Москва звонят колокола 2
+Content-Type: application/json
+
+###
+
+# поиск складов по адресу (search - поиск по части слова). Результат - возможны более одной записи.
+GET http://localhost:8000/api/v1/stocks/?search=Москв
+Content-Type: application/json
+
+###
+
+# поиск складов, где есть определенный продукт.
+# (products - это связующее поле m2m в модели Stock, по умолчанию ипользуются id-шники связанных сущностей)
+GET http://localhost:8000/api/v1/stocks/?products=12
+Content-Type: application/json
+
+###
+
+# поиск складов, где есть определенный продукт (Использовал search_fields = ['products__title'])
+GET http://localhost:8000/api/v1/stocks/?search=икр
+Content-Type: application/json
+
+###
+
+# Пагинация вывода списка складов
+GET http://localhost:8000/api/v1/stocks/?page=2
+
+###
